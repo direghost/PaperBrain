@@ -124,11 +124,13 @@ folder_path = None
 @cross_origin(supports_credentials=True)
 @app.route('/getpdf', methods=['GET', 'POST'])
 def get_pdf():
+    global file_name
+    global folder_path
+
 
     # Download the uploaded pdf from Firebase link
     if request.method == 'POST':
 
-        global folder_path
         folder_path = "static/pdfs"
         
         # Get all the pdf files in the folder
@@ -144,7 +146,6 @@ def get_pdf():
         url = request.json["pdfURL"]
         print("This is the pdf url", url)
 
-        global file_name
         # Get the pdf file name
         file_name = url.split("/")[-1]
 
@@ -174,11 +175,12 @@ def get_pdf():
 @cross_origin(supports_credentials=True)
 @app.route('/chat', methods=['GET', 'POST'])
 def chat():
+    global folder_path
+    global file_name
 
     # Get question from user about the uploaded pdf 
     query = request.json["message"] if request.json["message"] else ""
 
-    global file_name
     # Get all the index.json in the folder
     files = os.listdir(folder_path)
         
@@ -194,7 +196,6 @@ def chat():
     
     print("this is the index path",index_path)
 
-    global folder_path
     # Loads all the data from the pdfs folder
     documents = SimpleDirectoryReader(folder_path).load_data()
 
