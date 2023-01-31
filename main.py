@@ -124,12 +124,11 @@ folder_path = None
 @cross_origin(supports_credentials=True)
 @app.route('/getpdf', methods=['GET', 'POST'])
 def get_pdf():
-    global file_name
-    global folder_path
-
 
     # Download the uploaded pdf from Firebase link
     if request.method == 'POST':
+        global file_name
+        global folder_path
 
         folder_path = "static/pdfs"
         
