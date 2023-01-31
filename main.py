@@ -118,6 +118,8 @@ def explain():
         
     return "<h1>This is working as well</h1>"
 
+file_name = None
+folder_path = None
 
 @cross_origin(supports_credentials=True)
 @app.route('/getpdf', methods=['GET', 'POST'])
@@ -125,13 +127,11 @@ def get_pdf():
 
     # Download the uploaded pdf from Firebase link
     if request.method == 'POST':
-        # for development
-        folder_path = os.environ.get('pdfPath')
 
-        # for production
-        # folder_path = "/pdfs"
+        global folder_path
+        folder_path = "static/pdfs"
         
-        # Get all the files in the folder
+        # Get all the pdf files in the folder
         files = os.listdir(folder_path)
         
         # Remove all the files in the folder before downloading the new one
@@ -144,15 +144,17 @@ def get_pdf():
         url = request.json["pdfURL"]
         print("This is the pdf url", url)
 
+        global file_name
         # Get the pdf file name
         file_name = url.split("/")[-1]
 
         # Check if the file name has .pdf extension
         if not file_name.endswith(".pdf"):
             file_name += ".pdf"
-        folder_path = "pdfs"
 
-        # Check if the folder exists
+        folder_path = "static/pdfs"
+
+        # Check if the folder exists else create one
         if not os.path.exists(folder_path):
             os.mkdir(folder_path)
             
@@ -166,7 +168,7 @@ def get_pdf():
 
         return "PDF Downloaded!"
 
-    return "<h1>This is working as well</h1>"
+    return "<h1>This is working as well!</h1>"
 
 
 @cross_origin(supports_credentials=True)
@@ -176,16 +178,25 @@ def chat():
     # Get question from user about the uploaded pdf 
     query = request.json["message"] if request.json["message"] else ""
 
+    global file_name
+    # Get all the index.json in the folder
+    files = os.listdir(folder_path)
+        
+    # Remove all the files in the folder before downloading the new one
+    for file in files:
+        file_path = os.path.join(folder_path, file)
+        if os.path.isfile(file_path):
+            os.remove(file_path) 
+
     # Get the path of the index / for development
-    index_path = os.environ.get('path_index')
-    print(index_path)
 
-    # for production
-    # index_path = "/index/json"
+    index_path = f"static/index/{file_name}.json"
+    
+    print("this is the index path",index_path)
 
+    global folder_path
     # Loads all the data from the pdfs folder
-    documents = SimpleDirectoryReader(os.environ.get('pdfPath')).load_data()
-    print("This is documents loaded", documents)
+    documents = SimpleDirectoryReader(folder_path).load_data()
 
     # builds an index over the documents in the data folder
     index = GPTSimpleVectorIndex(documents)
@@ -204,21 +215,6 @@ def chat():
     final_answer = str(response)
     
     return {"answer":final_answer}
-
-    # response = openai.Completion.create(
-    #     model="text-davinci-002",
-    #     prompt=f"The user is a novice reading a research paper. Explain the following text in easy understandable form:\n{query}",
-    #     temperature=0.8,
-    #     max_tokens=293,
-    #     top_p=1,
-    #     frequency_penalty=0,
-    #     presence_penalty=0
-    # )
-    # final_response = response["choices"][0]["text"].lstrip()
-
-    # print(final_response)
-
-    # return {"answer":final_response}
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
