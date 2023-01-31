@@ -151,7 +151,7 @@ def get_pdf():
         # Check if the file name has .pdf extension
         if not file_name.endswith(".pdf"):
             file_name += ".pdf"
-
+        
         folder_path = "static/pdfs"
 
         # Check if the folder exists else create one
@@ -180,17 +180,22 @@ def chat():
 
     global folder_path
 
+    # Set path of indexed jsons
+    global file_name
+    index_path = f"static/index/{file_name}.json"
+
     # Get all the index.json in the folder
     files = os.listdir(folder_path)
         
     # Remove all the files in the folder before downloading the new one
-    for file in files:
-        file_path = os.path.join(folder_path, file)
+    for index_file in files:
+        file_path = os.path.join("static/index/", index_file)
         if os.path.isfile(file_path):
             os.remove(file_path) 
 
-    global file_name
-    # Get the path of the index / for development
+
+    
+    # Get the path of the index
     index_path = f"static/index/{file_name}.json"
     
     print("this is the index path",index_path)
